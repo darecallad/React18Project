@@ -1,87 +1,71 @@
-import { useEffect, useState } from "react";
-import { CanceledError } from "./services/api-client";
-import userService, { Users } from "./services/userService";
-
+import userService, { User } from "./services/user-service";
+import useUsers from "./hooks/useUsers";
 function App() {
-  const [users, setUsers] = useState<Users[]>([]);
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  useEffect(() => {
-    setIsLoading(true);
-    const { request, cancel } = userService.getAllUsers();
-    request
-      .then((res) => {
-        setUsers(res.data);
-        setIsLoading(false);
-      })
-      .catch((err) => {
-        if (err instanceof CanceledError) return;
-        setError(err.message);
-        setIsLoading(false);
-      });
-
-    return () => cancel();
-  }, []);
-
-  const deleteUser = (user: Users) => {
-    const originalUsers = [...users];
-    setUsers(users.filter((u) => u.id !== user.id));
-
-    userService.deleteUser(user.id).catch((err) => {
+  const { users, error, isLoading, setUsers, setError } = useUsers();
+  const deleteUser = (user: User) => {
+    const orgiinalUser = [...users];
+    //update UI
+    const filterUser = setUsers(users.filter((u) => u.id !== user.id));
+    //update Serve
+    userService.delete(user.id).catch((err) => {
       setError(err.message);
-      setUsers(originalUsers);
+      setUsers(orgiinalUser);
     });
   };
 
-  const addUser = () => {
-    const originalUsers = [...users];
-    const newUser = { id: 0, name: "Jon" };
+  const createUser = () => {
+    const newUser = { id: 0, name: "John" };
+    const orgiinalUser = [...users];
+    // update UI
     setUsers([newUser, ...users]);
-
+    // update serve
     userService
-      .addUser(newUser)
-      .then(({ data: savedUser }) => setUsers([savedUser, ...users]))
+      .add(newUser)
+      .then(({ data: addedUser }) => setUsers([addedUser, ...users]))
       .catch((err) => {
         setError(err.message);
-        setUsers(originalUsers);
+        setUsers(orgiinalUser);
       });
   };
 
-  const updateUser = (user: Users) => {
-    const originalUsers = [...users];
+  const updateUser = (user: User) => {
+    const orgiinalUser = [...users];
+    //update UI
     const updateUser = { ...user, name: user.name + "!" };
     setUsers(users.map((u) => (u.id === user.id ? updateUser : u)));
-
-    userService.updateUser(updateUser).catch((err) => {
+    //update serve
+    userService.update(updateUser).catch((err) => {
       setError(err.message);
-      setUsers(originalUsers);
+      setUsers(orgiinalUser);
     });
   };
 
   return (
     <>
-      {error && <p>Error!!!!!!!!!!!!!!!</p>}
+      {error && <p className="text-danger"> {error}</p>}
       {isLoading && <div className="spinner-border"></div>}
-      <button className="btn btn-primary mb-3" onClick={addUser}>
-        Add
-      </button>
+      <div className="mb-3">
+        <button className="btn btn-primary" onClick={createUser}>
+          Add User
+        </button>
+      </div>
       <ul className="list-group">
-        {users.map((u) => (
+        {users.map((user) => (
           <li
-            key={u.id}
             className="list-group-item d-flex justify-content-between"
+            key={user.id}
           >
-            {u.name}
+            {user.name}
             <div>
               <button
                 className="btn btn-outline-secondary mx-2"
-                onClick={() => updateUser(u)}
+                onClick={() => updateUser(user)}
               >
                 Update
               </button>
               <button
                 className="btn btn-outline-danger"
-                onClick={() => deleteUser(u)}
+                onClick={() => deleteUser(user)}
               >
                 Delete
               </button>
