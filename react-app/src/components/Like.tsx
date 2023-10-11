@@ -12,9 +12,9 @@ const Like = ({ onClick }: Props) => {
     setState(!state);
   }
 
-  if (state) return <AiFillHeart color="red" size={20} onClick={toggle} />;
+  if (state) return <AiFillHeart color="red" size={20} />;
 
-  return <AiOutlineHeart size={20} onClick={toggle} />;
+  return <AiOutlineHeart size={20} />;
 };
 
 export default Like;
