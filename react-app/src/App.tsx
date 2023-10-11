@@ -1,51 +1,52 @@
-import userService, { User } from "./services/user-service";
-import useUsers from "./hooks/useUsers";
-function App() {
-  const { users, error, isLoading, setUsers, setError } = useUsers();
+import UserService, { User } from "./services/user-service";
+import useUsers from "./hooks/useUserssss";
+const App = () => {
+  const { users, setUsers, setError, error, isLoading } = useUsers();
   const deleteUser = (user: User) => {
-    const orgiinalUser = [...users];
-    //update UI
-    const filterUser = setUsers(users.filter((u) => u.id !== user.id));
-    //update Serve
-    userService.delete(user.id).catch((err) => {
+    const originalUser = [...users];
+    //update UI first
+    setUsers(users.filter((u) => u.id !== user.id));
+    // update Serve
+    UserService.delete(user.id).catch((err) => {
       setError(err.message);
-      setUsers(orgiinalUser);
+      setUsers(originalUser);
     });
   };
 
+  // create user function
   const createUser = () => {
+    const originalUser = [...users];
     const newUser = { id: 0, name: "John" };
-    const orgiinalUser = [...users];
-    // update UI
+    // update UI first
     setUsers([newUser, ...users]);
-    // update serve
-    userService
-      .add(newUser)
+    // update Serve
+    UserService.create(newUser)
       .then(({ data: addedUser }) => setUsers([addedUser, ...users]))
       .catch((err) => {
         setError(err.message);
-        setUsers(orgiinalUser);
+        setUsers(originalUser);
       });
   };
 
+  // update User function
   const updateUser = (user: User) => {
-    const orgiinalUser = [...users];
-    //update UI
-    const updateUser = { ...user, name: user.name + "!" };
-    setUsers(users.map((u) => (u.id === user.id ? updateUser : u)));
-    //update serve
-    userService.update(updateUser).catch((err) => {
+    const originalUser = [...users];
+    // update UI first
+    const updatedUser = { ...user, name: user.name + "!" };
+    setUsers(users.map((u) => (u.id === user.id ? updatedUser : u)));
+    // update Serve
+    UserService.update(updatedUser).catch((err) => {
       setError(err.message);
-      setUsers(orgiinalUser);
+      setUsers(originalUser);
     });
   };
 
   return (
     <>
-      {error && <p className="text-danger"> {error}</p>}
       {isLoading && <div className="spinner-border"></div>}
-      <div className="mb-3">
-        <button className="btn btn-primary" onClick={createUser}>
+      {error && <p> Error Message: {error}</p>}
+      <div className="mb-2">
+        <button className="btn btn-outline-primary" onClick={createUser}>
           Add User
         </button>
       </div>
@@ -75,6 +76,6 @@ function App() {
       </ul>
     </>
   );
-}
+};
 
 export default App;

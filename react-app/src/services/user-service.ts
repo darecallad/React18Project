@@ -1,4 +1,4 @@
-import create from "./http-serves";
+import create from "./http-service";
 export interface User {
   id: number;
   name: string;
