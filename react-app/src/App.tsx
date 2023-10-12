@@ -12,7 +12,6 @@ const App = () => {
       setUsers(originalUser);
     });
   };
-
   // create user function
   const createUser = () => {
     const originalUser = [...users];
